@@ -1,4 +1,5 @@
 import requests
+import logging
 from pprint import pprint
 
 
@@ -6,6 +7,7 @@ class YandexDisk:
 
     def __init__(self, token):
         self.token = token
+        self.logger = logging.getLogger('main.yandex.disk.yandex_disk_api')
 
     def get_headers(self):
         return {
@@ -54,7 +56,7 @@ class YandexDisk:
         response.raise_for_status()
         # pprint(response.json())
         if response.status_code == 202:
-            print(f' File "{disk_file_path}" was uploaded to Yandex disk')
+            self.logger.info(f' File "{disk_file_path}" was uploaded to Yandex disk')
 
     def download_file_from_disk(self, disk_file_path, filename):
         href = self._get_download_link(disk_file_path=disk_file_path)
@@ -73,5 +75,6 @@ class YandexDisk:
         response = requests.put(method_url, headers=headers, params=params)
         if response.status_code == 201:
             print(f'New folder "{path}" is created')
+            self.logger.info(f'New folder "{path}" is created')
         if response.json().get('error') == 'DiskPathPointsToExistentDirectoryError':
             print(f'Directory "{path}" already exists on Yandex disk')

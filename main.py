@@ -1,8 +1,10 @@
 import requests
 from datetime import datetime
 import json
+import logging
 from pprint import pprint
 from progress.bar import IncrementalBar
+from progress_bar.custom_bars import ProgressBar
 from yandex.disk.yandex_disk_api import YandexDisk
 
 
@@ -51,7 +53,11 @@ class BackupPhotosFromVK:
         # Создадим папку с названием по "id" пользователя "VK"
         self.backup_target.create_new_folder(f'{self.backup_folder}/{vk_user_id}')
 
-        bar = IncrementalBar('Copying files to disk:', max=len(user_profile_photos_obj))
+        # bar = IncrementalBar('Copying files to disk:', max=len(user_profile_photos_obj))
+        file_names = [f'{self.backup_folder}/{vk_user_id}/{photo_name}' for photo_name in user_profile_photos_obj]
+        # print(file_names)
+        bar = ProgressBar('Copying files to disk:', max=len(user_profile_photos_obj), file_names=file_names)
+
         data_for_file = []
         # Скопируем полученные фотографии в указанный "backup_target"
         for photo_name, photo_obj in user_profile_photos_obj.items():
@@ -84,6 +90,15 @@ if __name__ == '__main__':
     with open('info_not_for_git/Ya_D.json') as file:
         data = json.load(file)
     ya_d_token = data['token']
+
+    logger = logging.getLogger('main')
+    logger.setLevel(logging.INFO)
+
+    fh = logging.FileHandler('backup.log')
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+
+    logger.addHandler(fh)
 
     backup_target = YandexDisk(token=ya_d_token)
     backuper = BackupPhotosFromVK(token=vk_token, target=backup_target)

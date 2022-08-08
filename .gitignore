@@ -3,4 +3,5 @@ info_not_for_git/
 app_log.log
 saved_photos.json
 test.py
+*.log
 *.pyc

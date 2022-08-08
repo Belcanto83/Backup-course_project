@@ -34,8 +34,8 @@ class BackupPhotosFromVK:
 
         user_profile_photos = [photo for photo in response['items']]
 
-        print('Photos from VK user profile:')
-        pprint(user_profile_photos)
+        # print('Photos from VK user profile:')
+        # pprint(user_profile_photos)
 
         # Сформируем словарь вида: {photo_name: {photo_obj}}
         user_profile_photos_obj = {}
@@ -51,7 +51,7 @@ class BackupPhotosFromVK:
         # Создадим папку с названием по "id" пользователя "VK"
         self.backup_target.create_new_folder(f'{self.backup_folder}/{vk_user_id}')
 
-        bar = IncrementalBar('CopyBar', max=len(user_profile_photos_obj))
+        bar = IncrementalBar('Copying files to disk:', max=len(user_profile_photos_obj))
         data_for_file = []
         # Скопируем полученные фотографии в указанный "backup_target"
         for photo_name, photo_obj in user_profile_photos_obj.items():
@@ -59,6 +59,8 @@ class BackupPhotosFromVK:
             # print(photo_obj)
             max_photo_size = max(photo_obj['sizes'], key=lambda itm: itm.get('width') * itm.get('height'))
             photo_url = max_photo_size['url']
+
+            bar.next()
             self.backup_target.upload_external_file_to_disk(f'{self.backup_folder}/{vk_user_id}/{photo_name}', photo_url)
 
             # Запишем информацию о скопированной на диск фотографии в ".json" файл
@@ -67,7 +69,7 @@ class BackupPhotosFromVK:
                 "size": f'{max_photo_size["width"]}x{max_photo_size["height"]}'
             }
             data_for_file.append(photo_data)
-            bar.next()
+
         bar.finish()
 
         with open('saved_photos.json', 'w') as file_obj:

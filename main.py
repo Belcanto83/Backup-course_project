@@ -19,6 +19,9 @@ class BackupPhotosFromVK:
         self.backup_target = target
         self.backup_folder = backup_folder
         self.backup_target.create_new_folder(self.backup_folder)
+        with open('saved_photos.json', 'w') as file_obj:
+            f_data = []
+            json.dump(f_data, file_obj)
 
     def get_user(self, vk_user_id):
         method_url = self.base_url + 'users.get'
@@ -64,9 +67,6 @@ class BackupPhotosFromVK:
 
         user_profile_photos = [photo for photo in response['items']]
 
-        # print('Photos from VK user profile:')
-        # pprint(user_profile_photos)
-
         # Сформируем словарь вида: {photo_name: {photo_obj}}
         user_profile_photos_obj = {}
         for photo in user_profile_photos:
@@ -83,15 +83,14 @@ class BackupPhotosFromVK:
         # Создадим папку с названием по "id" пользователя "VK"
         self.backup_target.create_new_folder(f'{self.backup_folder}/'
                                              f'{vk_user_id}_{user["first_name"]}_{user["last_name"]}/')
+        # Создадим в папке пользователя папку с названием по "id" альбома пользователя "VK"
         self.backup_target.create_new_folder(f'{self.backup_folder}/'
                                              f'{vk_user_id}_{user["first_name"]}_{user["last_name"]}/'
                                              f'{album_id}_{album_title}')
 
-        # bar = IncrementalBar('Copying files to disk:', max=len(user_profile_photos_obj))
         file_names = [f'{self.backup_folder}/{vk_user_id}_{user["first_name"]}_{user["last_name"]}/'
                       f'{album_id}_{album_title}/{photo_name}'
                       for photo_name in user_profile_photos_obj]
-        # print(file_names)
         bar = ProgressBar('Copying files to disk:', max=len(user_profile_photos_obj), file_names=file_names)
 
         data_for_file = []
@@ -119,8 +118,11 @@ class BackupPhotosFromVK:
 
         bar.finish()
 
+        with open('saved_photos.json') as file_obj:
+            file_data = json.load(file_obj)
         with open('saved_photos.json', 'w') as file_obj:
-            json.dump(data_for_file, file_obj, indent=2)
+            file_data.extend(data_for_file)
+            json.dump(file_data, file_obj, indent=2)
 
     def backup_user_photo_albums(self, vk_user_id, albums_count=10, photos_count=5):
         user_albums_obj = self.get_user_albums(vk_user_id=vk_user_id, albums_count=albums_count)
@@ -145,7 +147,7 @@ if __name__ == '__main__':
     logger = logging.getLogger('main')
     logger.setLevel(logging.INFO)
 
-    fh = logging.FileHandler('backup.log')
+    fh = logging.FileHandler('backup.log', encoding='utf-8')
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
 
@@ -156,6 +158,5 @@ if __name__ == '__main__':
 
     user_id = str(input('Please enter VK user id: '))
     backuper.backup_user_album_photos(user_id, album_id='profile')
-    # backuper.backup_user_album_photos(user_id, '140491119')
     backuper.backup_user_photo_albums(user_id, albums_count=10)
     # backuper.backup_user_profile_photos('230101')

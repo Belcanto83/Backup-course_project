@@ -56,7 +56,7 @@ class YandexDisk:
         response.raise_for_status()
         # pprint(response.json())
         if response.status_code == 202:
-            self.logger.info(f' File "{disk_file_path}" was uploaded to Yandex disk')
+            self.logger.info(f'File "{disk_file_path}" is uploaded to Yandex disk')
 
     def download_file_from_disk(self, disk_file_path, filename):
         href = self._get_download_link(disk_file_path=disk_file_path)

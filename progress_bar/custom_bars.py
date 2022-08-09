@@ -7,7 +7,7 @@ class ProgressBar(IncrementalBar):
        - Show files, uploaded to disk
     """
 
-    suffix = '%(index)d/%(max)d --- %(file_name)s is uploaded to disk'
+    suffix = '%(index)d/%(max)d --- %(file_name)s uploading to disk'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -53,7 +53,7 @@ class YandexDisk:
             'url': url,
         }
         response = requests.post(method_url, headers=headers, params=params)
-        response.raise_for_status()
+        # response.raise_for_status()
         # pprint(response.json())
         if response.status_code == 202:
             self.logger.info(f'File "{disk_file_path}" is uploaded to Yandex disk')
@@ -73,6 +73,7 @@ class YandexDisk:
         headers = self.get_headers()
         params = {'path': path}
         response = requests.put(method_url, headers=headers, params=params)
+        # response.raise_for_status()
         if response.status_code == 201:
             print(f'New folder "{path}" is created')
             self.logger.info(f'New folder "{path}" is created')

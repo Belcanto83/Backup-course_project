@@ -11,7 +11,7 @@ from yandex.disk.yandex_disk_api import YandexDisk
 
 class BackupPhotosFromVK:
     base_url = 'https://api.vk.com/method/'
-    backup_folder = 'API_python_uploads/VK_photos'
+    backup_folder = 'VK_photos'
 
     def __init__(self, token, target, vk_api_version='5.131', backup_folder=backup_folder):
         self.params = dict(access_token=token, v=vk_api_version)
@@ -19,6 +19,15 @@ class BackupPhotosFromVK:
         self.backup_target = target
         self.backup_folder = backup_folder
         self.backup_target.create_new_folder(self.backup_folder)
+
+    def get_user(self, vk_user_id):
+        method_url = self.base_url + 'users.get'
+        method_params = {
+            'user_ids': vk_user_id,
+        }
+        all_params = {**self.params, **method_params}
+        response = requests.get(method_url, params=all_params).json()
+        return response['response'][0]
 
     def get_user_albums(self, vk_user_id, albums_count=3):
         method_url = self.base_url + 'photos.getAlbums'
@@ -29,7 +38,7 @@ class BackupPhotosFromVK:
         all_params = {**self.params, **method_params}
         response = requests.get(method_url, params=all_params).json()
         # print(response)
-        return response['response']
+        return response.get('response')
 
     def get_user_photos(self, vk_user_id, album_id, photos_count):
         method_url = self.base_url + 'photos.get'
@@ -45,7 +54,7 @@ class BackupPhotosFromVK:
         response = requests.get(method_url, params=all_params).json().get('response')
         return response
 
-    def backup_user_album_photos(self, vk_user_id, album_id='profile', photos_count=5):
+    def backup_user_album_photos(self, vk_user_id, album_id='profile', album_title="without-title", photos_count=5):
         # probably, 'backup_target' should be here
 
         # Получили инфу о фотографиях пользователя в профиле
@@ -69,11 +78,19 @@ class BackupPhotosFromVK:
             file_name += file_extension
             user_profile_photos_obj[file_name] = photo
 
+        user = self.get_user(vk_user_id)
+
         # Создадим папку с названием по "id" пользователя "VK"
-        self.backup_target.create_new_folder(f'{self.backup_folder}/{vk_user_id}/{album_id}')
+        self.backup_target.create_new_folder(f'{self.backup_folder}/'
+                                             f'{vk_user_id}_{user["first_name"]}_{user["last_name"]}/')
+        self.backup_target.create_new_folder(f'{self.backup_folder}/'
+                                             f'{vk_user_id}_{user["first_name"]}_{user["last_name"]}/'
+                                             f'{album_id}_{album_title}')
 
         # bar = IncrementalBar('Copying files to disk:', max=len(user_profile_photos_obj))
-        file_names = [f'{self.backup_folder}/{vk_user_id}/{album_id}/{photo_name}' for photo_name in user_profile_photos_obj]
+        file_names = [f'{self.backup_folder}/{vk_user_id}_{user["first_name"]}_{user["last_name"]}/'
+                      f'{album_id}_{album_title}/{photo_name}'
+                      for photo_name in user_profile_photos_obj]
         # print(file_names)
         bar = ProgressBar('Copying files to disk:', max=len(user_profile_photos_obj), file_names=file_names)
 
@@ -89,7 +106,9 @@ class BackupPhotosFromVK:
             photo_url = max_photo_size['url']
 
             bar.next()
-            self.backup_target.upload_external_file_to_disk(f'{self.backup_folder}/{vk_user_id}/{album_id}/{photo_name}', photo_url)
+            self.backup_target.upload_external_file_to_disk(f'{self.backup_folder}/'
+                                                            f'{vk_user_id}_{user["first_name"]}_{user["last_name"]}/'
+                                                            f'{album_id}_{album_title}/{photo_name}', photo_url)
 
             # Запишем информацию о скопированной на диск фотографии в ".json" файл
             photo_data = {
@@ -104,9 +123,13 @@ class BackupPhotosFromVK:
             json.dump(data_for_file, file_obj, indent=2)
 
     def backup_user_photo_albums(self, vk_user_id, albums_count=10, photos_count=5):
-        user_albums = self.get_user_albums(vk_user_id=vk_user_id, albums_count=albums_count)['items']
+        user_albums_obj = self.get_user_albums(vk_user_id=vk_user_id, albums_count=albums_count)
+        if user_albums_obj is None:
+            return
+        user_albums = user_albums_obj['items']
         for user_album in user_albums:
-            self.backup_user_album_photos(vk_user_id=vk_user_id, album_id=user_album['id'], photos_count=photos_count)
+            self.backup_user_album_photos(vk_user_id=vk_user_id, album_id=user_album['id'],
+                                          album_title=user_album['title'], photos_count=photos_count)
             time.sleep(0.35)
 
 
@@ -132,7 +155,7 @@ if __name__ == '__main__':
     backuper = BackupPhotosFromVK(token=vk_token, target=backup_target)
 
     user_id = str(input('Please enter VK user id: '))
-    backuper.backup_user_album_photos(user_id)
+    backuper.backup_user_album_photos(user_id, album_id='profile')
     # backuper.backup_user_album_photos(user_id, '140491119')
-    backuper.backup_user_photo_albums(user_id)
+    backuper.backup_user_photo_albums(user_id, albums_count=10)
     # backuper.backup_user_profile_photos('230101')

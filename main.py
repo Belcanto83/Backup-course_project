@@ -7,6 +7,7 @@ import logging
 # from progress.bar import IncrementalBar
 from progress_bar.custom_bars import ProgressBar
 from yandex.disk.yandex_disk_api import YandexDisk
+from google.disk.google_disk_api import GoogleDisk
 
 
 class BackupPhotosFromVK:
@@ -82,7 +83,7 @@ class BackupPhotosFromVK:
 
         # Создадим папку с названием по "id" пользователя "VK"
         self.backup_target.create_new_folder(f'{self.backup_folder}/'
-                                             f'{vk_user_id}_{user["first_name"]}_{user["last_name"]}/')
+                                             f'{vk_user_id}_{user["first_name"]}_{user["last_name"]}')
         # Создадим в папке пользователя папку с названием по "id" альбома пользователя "VK"
         self.backup_target.create_new_folder(f'{self.backup_folder}/'
                                              f'{vk_user_id}_{user["first_name"]}_{user["last_name"]}/'
@@ -153,10 +154,17 @@ if __name__ == '__main__':
 
     logger.addHandler(fh)
 
-    backup_target = YandexDisk(token=ya_d_token)
-    backuper = BackupPhotosFromVK(token=vk_token, target=backup_target)
-
     user_id = str(input('Please enter VK user id: '))
-    backuper.backup_user_album_photos(user_id, album_id='profile')
-    backuper.backup_user_photo_albums(user_id, albums_count=10)
+
+    # ya_disk = YandexDisk(token=ya_d_token)
+    # ya_backuper = BackupPhotosFromVK(token=vk_token, target=ya_disk)
+    # ya_backuper.backup_user_album_photos(user_id, album_id='profile')
+    # ya_backuper.backup_user_photo_albums(user_id, albums_count=10)
+
+    go_disk = GoogleDisk()
+    go_backuper = BackupPhotosFromVK(token=vk_token, target=go_disk)
+    go_backuper.backup_user_album_photos(user_id, album_id='profile')
+    go_backuper.backup_user_photo_albums(user_id, albums_count=10)
+
     # backuper.backup_user_profile_photos('230101')
+    # backuper.backup_user_profile_photos('14165993')

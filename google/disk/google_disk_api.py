@@ -88,11 +88,8 @@ class GoogleDisk:
             # print('disk_file_path: ', '/'.join(disk_file_path.split('/')[:-1]))
             # print('parents: ', file_metadata['parents'])
             fh = io.BytesIO(file_data)
-            # media = MediaIoBaseUpload(fh, mimetype='image/jpeg', chunksize=1024*1024)
             media = MediaIoBaseUpload(fh, mimetype='image/jpeg')
-            # pylint: disable=maybe-no-member
-            file = service.files().create(body=file_metadata, media_body=media,
-                                          fields='id').execute()
+            file = service.files().create(body=file_metadata, media_body=media, fields='id').execute()
             # print(F'File ID: {file.get("id")}')
             self.logger.info(f'File "{disk_file_path}" is uploaded to Google disk')
             return file.get('id')

@@ -156,15 +156,15 @@ if __name__ == '__main__':
 
     user_id = str(input('Please enter VK user id: '))
 
-    # ya_disk = YandexDisk(token=ya_d_token)
-    # ya_backuper = BackupPhotosFromVK(token=vk_token, target=ya_disk)
-    # ya_backuper.backup_user_album_photos(user_id, album_id='profile')
+    ya_disk = YandexDisk(token=ya_d_token)
+    ya_backuper = BackupPhotosFromVK(token=vk_token, target=ya_disk)
+    ya_backuper.backup_user_album_photos(user_id, album_id='profile')
     # ya_backuper.backup_user_photo_albums(user_id, albums_count=10)
 
-    go_disk = GoogleDisk()
-    go_backuper = BackupPhotosFromVK(token=vk_token, target=go_disk)
-    go_backuper.backup_user_album_photos(user_id, album_id='profile')
-    go_backuper.backup_user_photo_albums(user_id, albums_count=10)
-
+    # go_disk = GoogleDisk()
+    # go_backuper = BackupPhotosFromVK(token=vk_token, target=go_disk)
+    # go_backuper.backup_user_album_photos(user_id, album_id='profile')
+    # go_backuper.backup_user_photo_albums(user_id, albums_count=10)
+    #
     # backuper.backup_user_profile_photos('230101')
     # backuper.backup_user_profile_photos('14165993')

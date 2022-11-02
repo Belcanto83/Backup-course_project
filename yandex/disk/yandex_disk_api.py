@@ -79,3 +79,26 @@ class YandexDisk:
             self.logger.info(f'New folder "{path}" is created')
         if response.json().get('error') == 'DiskPathPointsToExistentDirectoryError':
             print(f'Directory "{path}" already exists on Yandex disk')
+        return response.status_code
+
+    def get_file_metadata(self, path):
+        method_url = 'https://cloud-api.yandex.net/v1/disk/resources'
+        headers = self.get_headers()
+        params = {'path': path}
+        response = requests.get(method_url, headers=headers, params=params)
+        if response.status_code == 200:
+            print(f'Metadata for "{path}" is obtained')
+        else:
+            print(f'Error has occurred during {path} metadata obtaining')
+        return response.status_code
+
+    def delete_file(self, path):
+        method_url = 'https://cloud-api.yandex.net/v1/disk/resources'
+        headers = self.get_headers()
+        params = {'path': path}
+        response = requests.delete(method_url, headers=headers, params=params)
+        if response.status_code == 204:
+            print(f'Folder "{path}" is deleted')
+        else:
+            print(f'Error has occurred during {path} deletion')
+        return response.status_code
